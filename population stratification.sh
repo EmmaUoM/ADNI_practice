@@ -1,23 +1,23 @@
-# make sure to merge files are in same build
+# make sure to merge files which are in same build
 # Extract the variants present in OWN dataset from the hapmap dataset.
 awk '{print$2}' hweclean.bim > OWN_SNPs.txt
 plink --bfile CEU --extract OWN_SNPs.txt --make-bed --out CEU_COMMON
 
-# Extract the variants present in 1000 Genomes dataset from the HapMap dataset.
+# Extract the variants present in hapmap dataset from the OWN dataset.
 awk '{print$2}' CEU.bim > CEU_SNPs.txt
 plink --bfile hweclean --extract CEU_SNPs.txt --recode --make-bed --out OWN_COMMON
 
-## The datasets must have the same build. Change the build 1000 Genomes data build.
+## The datasets must have the same build. Change the build hapmap data build.
 awk '{print$2,$4}' OWN_COMMON.map > build.txt
 # buildhapmap.txt contains one SNP-id and physical position per line.
 plink --bfile CEU_COMMON --update-map build.txt --make-bed --out CEU_new_build
 
-## Merge the HapMap and 1000 Genomes data sets
+## Merge the HapMap and OWN data sets
 
-# Prior to merging 1000 Genomes data with the HapMap data we want to make sure that the files are mergeable, for this we conduct 3 steps:
-# 1) Make sure the reference genome is similar in the HapMap and the 1000 Genomes Project datasets.
+# Prior to merging OWN data with the HapMap data we want to make sure that the files are mergeable, for this we conduct 3 steps:
+# 1) Make sure the reference genome is similar in the HapMap and OWN datasets.
 # 2) Resolve strand issues.
-# 3) Remove the SNPs which after the previous two steps still differ between datasets.
+# 3) Remove the SNPs which after the previous two steps still differ between datasets. (didn't do since no differ SNPs)
 
 # The following steps are maybe quite technical in terms of commands, but we just compare the two data sets and make sure they correspond.
 
@@ -34,13 +34,13 @@ sort CEU_new_build_tmp OWN-adj_tmp |uniq -u > all_differences.txt
 ## Flip SNPs for resolving strand issues.
 # Print SNP-identifier and remove duplicates.
 awk '{print$1}' all_differences.txt | sort -u > flip_list.txt
-# Generates a file of 812 SNPs. These are the non-corresponding SNPs between the two files. 
-# Flip the 812 non-corresponding SNPs. 
+
 plink --bfile OWN-adj --flip flip_list.txt --reference-allele ref-list.txt --make-bed --out corrected_OWN
 
 # Check for SNPs which are still problematic after they have been flipped.
 awk '{print$2,$5,$6}' corrected_OWN.bim > corrected_OWN_tmp
-sort CEU_new_build_tmp corrected_OWN_tmp |uniq -u  > uncorresponding_SNPs.txt
+sort CEU_new_build_tmp corrected_OWN_tmp |uniq -u  > uncorresponding_SNPs.txt 
+# since nothing in uncorresponding_SNPs.txt, we skip this step
 
 # Merge
 plink --bfile CEU_new_build --bmerge corrected_OWN.bed corrected_OWN.bim corrected_OWN.fam --make-bed --out data
