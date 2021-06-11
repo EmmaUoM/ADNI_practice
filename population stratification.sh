@@ -52,6 +52,7 @@ plink --bfile data --geno .05 --make-bed --out dataclean
 plink --bfile data --genome --out genome
 plink --bfile data --read-genome genome.genome --cluster --mds-plot 4 --silent --out mds
 
-
+# figure
+Rscript plot.R
 
 
