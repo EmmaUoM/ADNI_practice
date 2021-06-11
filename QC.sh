@@ -38,21 +38,3 @@ awk '{ if ($9 <0.000001) print $0 }' plink.hwe>plinkzoomhwe.hwe
 Rscript --no-save hwe.R
 
 plink --bfile clean --hwe 1e-6 --hwe-all --make-bed --out hweclean
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
