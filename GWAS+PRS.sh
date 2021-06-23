@@ -16,4 +16,6 @@ plink --bfile nature --covar covar_mds.txt --logistic --hide-covar --out gwas
 
 ## PRS
 # LD based clumping
+plink --bfile nature --clump gwas.assoc --clump-r2 0.01 --clump-kb 10 --clump-p2 1 --clump-p1 0.1
 
+# add ORs as PRS
