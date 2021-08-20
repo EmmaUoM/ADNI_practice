@@ -8,7 +8,7 @@ bed <- snp_plinkQC(plink, prefix.in = "tmp-data/hweclean",
                    extra.options = " --thin 0.1")
 
 rds <- snp_readBed(bed)
-snp <- snp_attach("tmp-data/1kg_phase1_all_QC.rds")
+snp <- snp_attach("tmp-data/hweclean_QC.rds")
 
 G <- snp$genotypes
 counts <- big_counts(G)
