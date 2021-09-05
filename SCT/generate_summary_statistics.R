@@ -7,11 +7,23 @@ bed <- snp_plinkQC(plink, prefix.in = "tmp-data/hweclean",
                    geno = 0, maf = 0.05, hwe = 1e-10,
                    extra.options = " --thin 0.1")
 
+# Read PLINK files into a "bigSNP"
+# The path to the RDS file that stores the bigSNP object. Note that this function creates one other file which stores the values of the Filebacked Big Matrix.
+# You shouldn't read from PLINK files more than once. Instead, use snp_attach to load the "bigSNP" object in any R session from backing files
 rds <- snp_readBed(bed)
 snp <- snp_attach("tmp-data/hweclean_QC.rds")
 
+# Imputation
 G <- snp$genotypes
+CHR <- snp$map$chromosome
+infos <- snp_fastImpute(G, CHR)
+snp$genotypes$code256 <- CODE_IMPUTE_PRED
+snp <- snp_save(snp)
+big_counts(G, ind.col = 1:10)
+
+
 counts <- big_counts(G)
+# print(summary(counts))
 
 sum(counts[4, ])
 counts[, 1:10]
@@ -28,7 +40,7 @@ snp$fam$paternal.ID <- snp$fam$maternal.ID <- 0L
 ind_norel <- which(fam$Relationship == "unrel")
 maf <- snp_MAF(G, ind_norel)
 
-bed <- snp_writeBed(snp, tempfile(fileext = ".bed"),
+bed <- snp_writeBed(snp, "tmp-data/temp.bed",
                     ind.row = ind_norel, ind.col = which(maf > 0.05))
 
 rds <- snp_readBed(bed)
@@ -65,7 +77,7 @@ sumstats <- cbind.data.frame(
   p = predict(gwas, log10 = FALSE))
 
 # 写文件
-snp_writeBed(snp, "tmp-data/public-data.bed")
+snp_writeBed(snp, "tmp-data/new-data.bed")
 saveRDS(pheno, file = "tmp-data/data-pheno.rds")
 bigreadr::fwrite2(sumstats, "tmp-data/sumstats.txt")
 zip("data-raw/public-data.zip",
